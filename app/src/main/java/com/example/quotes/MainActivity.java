@@ -1,11 +1,14 @@
 package com.example.quotes;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import retrofit2.Call;
@@ -16,7 +19,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView quoteTextView, authorTextView, likesTextView;
+    private ConstraintLayout layout;
+    private TextView quoteTextView, authorTextView, likesTextView, continueTextView;
+    private ProgressBar spinner;
     private ImageView likeBtn;
     private Retrofit retrofit;
 
@@ -36,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void getRandomQuote() {
+        spinner.setVisibility(View.VISIBLE);
+        layout.setClickable(false);
         QuoteApi quoteApi = retrofit.create(QuoteApi.class);
 
         Call<BaseApi> baseApiCall = quoteApi.getQuote();
@@ -51,11 +58,14 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("response", "onResponse: " + result.data.quote.getText());
                     setRandomQuote(result.data.quote);
                 }
+                spinner.setVisibility(View.INVISIBLE);
+                continueTextView.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onFailure(Call<BaseApi> call, Throwable t) {
                 Log.e("Error", "onFailure: " + t.getMessage());
+                spinner.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -64,13 +74,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        layout = findViewById(R.id.layout);
+        continueTextView = findViewById(R.id.continueTextView);
         quoteTextView = findViewById(R.id.quoteTextView);
         authorTextView = findViewById(R.id.authorTextView);
         likesTextView = findViewById(R.id.likesTextView);
         likeBtn = findViewById(R.id.likeBtn);
-        likeBtn.setVisibility(View.INVISIBLE);
-
+        spinner = findViewById(R.id.progressBar);
         retrofit = new Retrofit.Builder().baseUrl("https://pro-quotes-backend.herokuapp.com/").addConverterFactory(GsonConverterFactory.create()).build();
 
         getRandomQuote();
@@ -78,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onContinue(View view) {
+        Log.d("continue", "onContinue: clicked");
         getRandomQuote();
     }
 }
