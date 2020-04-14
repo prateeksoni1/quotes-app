@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,8 +16,40 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView quoteTextView, authorTextView, likesTextView, continueTextView;
+    private TextView quoteTextView, authorTextView, likesTextView;
     private ImageView likeBtn;
+    private Retrofit retrofit;
+
+    void setRandomQuote(Quote quote) {
+        quoteTextView.setText(quote.getText());
+        authorTextView.setText(quote.getAuthor());
+        likesTextView.setText(String.format("%s likes", quote.getLikes().toString()));
+    }
+
+    void getRandomQuote() {
+        QuoteApi quoteApi = retrofit.create(QuoteApi.class);
+
+        Call<BaseApi> baseApiCall = quoteApi.getQuote();
+
+        baseApiCall.enqueue(new Callback<BaseApi>() {
+            @Override
+            public void onResponse(Call<BaseApi> call, Response<BaseApi> response) {
+                if (!response.isSuccessful()) {
+                    Log.i("Response", response.code() + response.message());
+                }
+                if (response.body() != null) {
+                    BaseApi result = response.body();
+                    Log.i("response", "onResponse: " + result.data.quote.getText());
+                    setRandomQuote(result.data.quote);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BaseApi> call, Throwable t) {
+                Log.e("Error", "onFailure: " + t.getMessage());
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,31 +59,15 @@ public class MainActivity extends AppCompatActivity {
         quoteTextView = findViewById(R.id.quoteTextView);
         authorTextView = findViewById(R.id.authorTextView);
         likesTextView = findViewById(R.id.likesTextView);
-        continueTextView = findViewById(R.id.continueTextView);
         likeBtn = findViewById(R.id.likeBtn);
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://pro-quotes-backend.herokuapp.com/").build();
+        retrofit = new Retrofit.Builder().baseUrl("https://pro-quotes-backend.herokuapp.com/").addConverterFactory(GsonConverterFactory.create()).build();
 
-        QuoteApi quoteApi = retrofit.create(QuoteApi.class);
+        getRandomQuote();
 
-        Call<Quote> quote = quoteApi.getQuote();
+    }
 
-        quote.enqueue(new Callback<Quote>() {
-            @Override
-            public void onResponse(Call<Quote> call, Response<Quote> response) {
-                if (!response.isSuccessful()) {
-                    Log.i("Response", response.code() + response.message());
-                }
-                if (response.body() != null) {
-                    Log.i("Response", response.body().toString());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Quote> call, Throwable t) {
-                Log.e("Error", "onFailure: " + t.getMessage());
-            }
-        });
-
+    public void onContinue(View view) {
+        getRandomQuote();
     }
 }

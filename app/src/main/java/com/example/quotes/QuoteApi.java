@@ -6,6 +6,6 @@ import retrofit2.http.GET;
 public interface QuoteApi {
 
     @GET("api/v1/quote")
-    Call<Quote> getQuote();
+    Call<BaseApi> getQuote();
 
 }
