@@ -21,8 +21,17 @@ public class MainActivity extends AppCompatActivity {
     private Retrofit retrofit;
 
     void setRandomQuote(Quote quote) {
+        likeBtn.setVisibility(View.VISIBLE);
+
         quoteTextView.setText(quote.getText());
-        authorTextView.setText(quote.getAuthor());
+        String author = quote.getAuthor();
+
+        if (author != null) {
+            authorTextView.setText(String.format("- %s", quote.getAuthor()));
+        } else {
+            authorTextView.setText(R.string.defaultAuthor);
+        }
+
         likesTextView.setText(String.format("%s likes", quote.getLikes().toString()));
     }
 
@@ -60,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         authorTextView = findViewById(R.id.authorTextView);
         likesTextView = findViewById(R.id.likesTextView);
         likeBtn = findViewById(R.id.likeBtn);
+        likeBtn.setVisibility(View.INVISIBLE);
 
         retrofit = new Retrofit.Builder().baseUrl("https://pro-quotes-backend.herokuapp.com/").addConverterFactory(GsonConverterFactory.create()).build();
 
